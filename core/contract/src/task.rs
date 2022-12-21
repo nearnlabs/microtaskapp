@@ -5,7 +5,7 @@ use near_sdk::serde::Serialize;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::{env, log, near_bindgen, AccountId, Promise, Balance};
 use near_sdk::json_types::U128;
-//use phpify::array::array_unshift;
+
 
 pub const STORAGE_COST: u128 = 1_000_000_000_000_000_000_000;
 
@@ -21,13 +21,13 @@ pub struct Task {
 
 #[near_bindgen]
 impl Contract {
-  #[payable] // Public - People can attach money
+  #[payable] 
   pub fn setup_task(&mut self, task_payment: u128) -> u128 {
-    // Get who is calling the method and how much $NEAR they attached
+    // Any potential client can set up a microtask
     let client: AccountId = env::predecessor_account_id();
     let setup_fee: Balance = env::attached_deposit();
 
-    //let mut donated_so_far = self.donations.get(&donor).unwrap_or(0);
+    
 
     assert!(setup_fee > STORAGE_COST, "Attach at least {} yoctoNEAR", STORAGE_COST);
     assert!(task_payment > STORAGE_COST* 10, "Too Little Being Offered");
@@ -45,20 +45,19 @@ impl Contract {
 
     log!("Showing first client: {}", self.clients.get(&new_task_id).unwrap());
 
-    // Return the total amount donated so far
+    
     return new_task_id;
   }
 
-  #[payable] // Public - People can attach money
+  #[payable] 
   pub fn apply_for_task(&mut self, task_id: u128) -> bool {
-    // Get who is calling the method and how much $NEAR they attached
+    // An eligible user can apply for said task
     let applicant: AccountId = env::predecessor_account_id();
 
     assert!(&applicant != self.clients.get(&task_id).unwrap(), "You CANNOT apply for your own task!");
     
     let application_fee: Balance = env::attached_deposit();
 
-    //let mut donated_so_far = self.donations.get(&donor).unwrap_or(0);
 
     assert!(application_fee > STORAGE_COST, "Attach at least {} yoctoNEAR", STORAGE_COST);
     
@@ -67,7 +66,7 @@ impl Contract {
     
     let mut applicant_vec = self.applicants.get(&task_id).unwrap().clone();
 
-    //array_unshift(&mut applicant_vec, &applicant);
+    
 
     applicant_vec.push(applicant.clone());
 
@@ -79,19 +78,20 @@ impl Contract {
     
     
 
-    // Return the total amount donated so far
+    
     return true;
   }
 
-  #[payable] // Public - People can attach money
+  #[payable] 
   pub fn assign_task(&mut self, task_id: u128, assignee: AccountId) -> bool {
-    // Get who is calling the method and how much $NEAR they attached
+    // Used by the client to assign the microtask to their preferred applicant. Potential fee
+    // for the task is moved from the client to the smart contract
     let caller: AccountId = env::predecessor_account_id();
     assert!(&caller == self.clients.get(&task_id).unwrap());
 
     let pre_payment: Balance = env::attached_deposit();
 
-    //let mut donated_so_far = self.donations.get(&donor).unwrap_or(0);
+    
 
     assert!(&pre_payment > self.quotes.get(&task_id).unwrap(), "Not enough to cover the quoted price: {}", self.quotes.get(&task_id).unwrap());
     
@@ -102,9 +102,10 @@ impl Contract {
     return true;
   }
 
-  #[payable] // Public - People can attach money
+  #[payable] 
   pub fn client_review_task(&mut self, task_id: u128, judgement: bool) -> bool {
-    // Get who is calling the method and how much $NEAR they attached
+    // Client review given in the form of a true (task completed satisfactorily) or
+    // false (task not completed) flag
     let caller: AccountId = env::predecessor_account_id();
     assert!(&caller == self.clients.get(&task_id).unwrap());
 
@@ -119,9 +120,10 @@ impl Contract {
     return true;
   }
 
-  #[payable] // Public - People can attach money
+  #[payable] 
   pub fn assignee_challenge_task(&mut self, task_id: u128) -> bool {
-    // Get who is calling the method and how much $NEAR they attached
+    // Provision for the assignee to challenge the client review. A panel of validators
+    // decide in such cases if the client judgement is to be overruled.
     let caller: AccountId = env::predecessor_account_id();
     assert!(&caller == self.assignees.get(&task_id).unwrap());
 
@@ -136,9 +138,10 @@ impl Contract {
     return true;
   }
 
-  #[payable] // Public - People can attach money
+  #[payable] 
   pub fn validate_task(&mut self, task_id: u128, judgement: bool) -> bool {
-    // Get who is calling the method and how much $NEAR they attached
+    // The app team deciding to either give the payment to the assignee or refund the client
+    // depending on client review, assignee challenge, and the validators' feedback.
     let caller: AccountId = env::predecessor_account_id();
     //let setup_fee: Balance = env::attached_deposit();
 
@@ -164,7 +167,7 @@ impl Contract {
     return true;
   }
 
-  // Public - get donation by account ID
+  
   pub fn get_client_for_task(&self, task_id: u128) -> AccountId {
     return self.clients.get(&task_id).unwrap().clone();
   }
