@@ -16,6 +16,7 @@ pub struct Task {
   pub account_id: AccountId, 
   pub payable_amount: U128,
   pub task_id: u128,
+  
 }
 
 #[near_bindgen]
@@ -97,6 +98,40 @@ impl Contract {
     self.assignees.insert(task_id, assignee.clone());
 
     log!("Thank you for choosing {} as your assignee", assignee.clone());
+    
+    return true;
+  }
+
+  #[payable] // Public - People can attach money
+  pub fn client_review_task(&mut self, task_id: u128, judgement: bool) -> bool {
+    // Get who is calling the method and how much $NEAR they attached
+    let caller: AccountId = env::predecessor_account_id();
+    assert!(&caller == self.clients.get(&task_id).unwrap());
+
+    //let pre_payment: Balance = env::attached_deposit();
+
+
+    
+    self.client_review.insert(task_id, judgement.clone());
+
+    log!("Thank you for reviewing Task ID: {}", task_id.clone());
+    
+    return true;
+  }
+
+  #[payable] // Public - People can attach money
+  pub fn assignee_challenge_task(&mut self, task_id: u128) -> bool {
+    // Get who is calling the method and how much $NEAR they attached
+    let caller: AccountId = env::predecessor_account_id();
+    assert!(&caller == self.assignees.get(&task_id).unwrap());
+
+    //let pre_payment: Balance = env::attached_deposit();
+
+    assert!(!self.client_review.get(&task_id).unwrap());
+    
+    self.assignee_challenge.insert(task_id, true);
+
+    log!("You challenge for Task ID: {} has been received. You will be notified shortly.", task_id.clone());
     
     return true;
   }

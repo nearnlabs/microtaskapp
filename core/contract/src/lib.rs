@@ -15,6 +15,8 @@ pub struct Contract {
   pub quotes: BTreeMap<u128, u128>,
   pub applicants: BTreeMap<u128, Vec<AccountId>>,
   pub assignees: BTreeMap<u128, AccountId>,
+  pub client_review: BTreeMap<u128, bool>,
+  pub assignee_challenge: BTreeMap<u128, bool>,
 }
 
 impl Default for Contract {
@@ -25,6 +27,8 @@ impl Default for Contract {
       quotes: BTreeMap::new(),
       applicants: BTreeMap::new(),
       assignees: BTreeMap::new(),
+      client_review: BTreeMap::new(),
+      assignee_challenge: BTreeMap::new(),
     }
   }
 }
@@ -41,6 +45,8 @@ impl Contract {
         quotes: BTreeMap::new(),
         applicants: BTreeMap::new(),
         assignees: BTreeMap::new(),
+        client_review: BTreeMap::new(),
+        assignee_challenge: BTreeMap::new(),
     }
   }
 
@@ -229,6 +235,62 @@ mod tests {
       let res = contract.validate_task(1, true);
 
       assert_eq!(res, true, "Assertion Failed 6");
+
+      
+  }
+
+  #[test]
+  fn check_client_review() {
+      let mut contract = Contract::init();
+
+      // Make a donation
+      set_context("client_a", 1*NEAR);
+      contract.setup_task(NEAR*5);
+      //let first_quote = contract.get_quote_for_task(contract.task_count);
+
+      set_context("client_b", 1*NEAR);
+      let _res1 = contract.apply_for_task(1);
+
+      set_context("client_c", 1*NEAR);
+      let _res2 = contract.apply_for_task(1);
+
+      let applicant_list = contract.get_applicants_for_task(contract.task_count);
+      let chosen_one = &applicant_list[1];
+      set_context("client_a", 6*NEAR);
+      let _res3 = contract.assign_task(1, chosen_one.clone());
+      let res = contract.client_review_task(1, true);
+      
+
+      assert_eq!(res, true, "Assertion Failed 6");
+
+      
+  }
+
+  #[test]
+  fn check_assignee_challenge() {
+      let mut contract = Contract::init();
+
+      // Make a donation
+      set_context("client_a", 1*NEAR);
+      contract.setup_task(NEAR*5);
+      //let first_quote = contract.get_quote_for_task(contract.task_count);
+
+      set_context("client_b", 1*NEAR);
+      let _res1 = contract.apply_for_task(1);
+
+      set_context("client_c", 1*NEAR);
+      let _res2 = contract.apply_for_task(1);
+
+      let applicant_list = contract.get_applicants_for_task(contract.task_count);
+      let chosen_one = &applicant_list[1];
+      set_context("client_a", 6*NEAR);
+      let _res3 = contract.assign_task(1, chosen_one.clone());
+      let _res4 = contract.client_review_task(1, false);
+      set_context("client_c", 1*NEAR);
+      let res = contract.assignee_challenge_task(1);
+      
+
+      assert_eq!(res, true, "Assertion Failed 7");
 
       
   }
