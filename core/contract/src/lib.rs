@@ -106,6 +106,24 @@ mod tests {
   }
 
   #[test]
+  #[should_panic]
+  fn check_quote_too_less() {
+      let mut contract = Contract::init();
+
+      // Make a donation
+      set_context("client_a", NEAR/1000);
+      contract.setup_task(NEAR*3);
+      let first_quote = contract.get_quote_for_task(contract.task_count);
+
+      log!("{} tasks", contract.task_count);
+      // Check the donation was recorded correctly
+      //assert_eq!(contract.task_count, 1);
+      assert_eq!(first_quote, NEAR*3,"assertion failed");
+
+      
+  }
+
+  #[test]
   fn check_client() {
       let mut contract = Contract::init();
 
@@ -149,6 +167,28 @@ mod tests {
       //let first_quote = contract.get_quote_for_task(contract.task_count);
 
       set_context("client_b", 1*NEAR);
+      let res = contract.apply_for_task(1);
+
+      //log!("{} tasks", contract.task_count);
+      // Check the donation was recorded correctly
+      //assert_eq!(contract.task_count, 1);
+      assert_eq!(true, res,"assertion failed 3");
+
+      
+  }
+
+
+  #[test]
+  #[should_panic]
+  fn check_self_application() {
+      let mut contract = Contract::init();
+
+      // Make a donation
+      set_context("client_a", 1*NEAR);
+      contract.setup_task(NEAR*5);
+      //let first_quote = contract.get_quote_for_task(contract.task_count);
+
+      
       let res = contract.apply_for_task(1);
 
       //log!("{} tasks", contract.task_count);
