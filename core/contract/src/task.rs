@@ -61,7 +61,9 @@ impl Contract {
 
     assert!(application_fee > STORAGE_COST, "Attach at least {} yoctoNEAR", STORAGE_COST);
     
-    
+    let  applicant_vec = self.applicants.get(&task_id).unwrap().clone();
+    let index = applicant_vec.iter().position(|r| r.clone() == applicant.clone());
+    assert!(!index.is_some(), "You Have Already Applied for the Task!");
     
     
     let mut applicant_vec = self.applicants.get(&task_id).unwrap().clone();
@@ -95,6 +97,10 @@ impl Contract {
 
     assert!(&pre_payment > self.quotes.get(&task_id).unwrap(), "Not enough to cover the quoted price: {}", self.quotes.get(&task_id).unwrap());
     
+    let  applicant_vec = self.applicants.get(&task_id).unwrap().clone();
+    let index = applicant_vec.iter().position(|r| r.clone() == assignee.clone());
+    assert!(index.is_some(), "Assignee Needs To Have Applied for the Task!");
+
     self.assignees.insert(task_id, assignee.clone());
 
     log!("Thank you for choosing {} as your assignee", assignee.clone());

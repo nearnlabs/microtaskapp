@@ -222,6 +222,59 @@ mod tests {
   }
 
   #[test]
+  #[should_panic]
+  fn check_double_applicant() {
+      let mut contract = Contract::init();
+
+      // Make a donation
+      set_context("client_a", 1*NEAR);
+      contract.setup_task(NEAR*5);
+      //let first_quote = contract.get_quote_for_task(contract.task_count);
+
+      set_context("client_b", 1*NEAR);
+      let _res = contract.apply_for_task(1);
+      let _res = contract.apply_for_task(1);
+
+      let applicant_list = contract.get_applicants_for_task(contract.task_count);
+
+      //log!("{} tasks", contract.task_count);
+      // Check the donation was recorded correctly
+      //assert_eq!(contract.task_count, 1);
+      assert_eq!(applicant_list[0], AccountId::new_unchecked("client_b".to_string()));
+
+      
+  }
+
+  #[test]
+  #[should_panic]
+  fn check_non_applicant_assignee() {
+      let mut contract = Contract::init();
+
+      // Make a donation
+      set_context("client_a", 1*NEAR);
+      contract.setup_task(NEAR*5);
+      //let first_quote = contract.get_quote_for_task(contract.task_count);
+
+      set_context("client_b", 1*NEAR);
+      let _res1 = contract.apply_for_task(1);
+
+      set_context("client_c", 1*NEAR);
+      let _res2 = contract.apply_for_task(1);
+
+      let applicant_list = contract.get_applicants_for_task(contract.task_count);
+      let non_applicant : AccountId = "".parse().unwrap();
+      let chosen_one = &non_applicant;
+      set_context("client_a", 6*NEAR);
+      let _res = contract.assign_task(1, chosen_one.clone());
+      //log!("{} tasks", contract.task_count);
+      // Check the donation was recorded correctly
+      //assert_eq!(contract.task_count, 1);
+      assert_eq!(chosen_one.clone(), AccountId::new_unchecked("client_c".to_string()), "Assertion Failed 5");
+
+      
+  }
+
+  #[test]
   fn check_assignee() {
       let mut contract = Contract::init();
 
